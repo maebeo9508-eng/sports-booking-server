@@ -11,14 +11,12 @@ const pool = new Pool({
   ssl: { rejectUnauthorized: false }
 });
 
-// 예약된 슬롯 조회
 app.get('/slots', async (req, res) => {
   try {
     const { court_id, date } = req.query;
     const result = await pool.query(
-      `SELECT start_time FROM bookings 
-       WHERE court_id=$1 AND date=$2 AND status='confirmed'`,
-      [court_id, date]
+      'SELECT start_time FROM bookings WHERE court_id=$1 AND date=$2 AND status=$3',
+      [court_id, date, 'confirmed']
     );
     const booked = result.rows.map(r => r.start_time.slice(0, 5));
     res.json({ booked });
@@ -27,13 +25,11 @@ app.get('/slots', async (req, res) => {
   }
 });
 
-// 예약 생성
 app.post('/bookings', async (req, res) => {
   try {
     const { court_id, user_id, username, date, start_time, end_time } = req.body;
     const result = await pool.query(
-      `INSERT INTO bookings (court_id, user_id, username, date, start_time, end_time)
-       VALUES ($1,$2,$3,$4,$5,$6) RETURNING id`,
+      'INSERT INTO bookings (court_id, user_id, username, date, start_time, end_time) VALUES ($1,$2,$3,$4,$5,$6) RETURNING id',
       [court_id, user_id, username, date, start_time, end_time]
     );
     res.json({ booking_id: result.rows[0].id, status: 'confirmed' });
@@ -42,12 +38,11 @@ app.post('/bookings', async (req, res) => {
   }
 });
 
-// 내 예약 내역
 app.get('/bookings/me', async (req, res) => {
   try {
     const { user_id } = req.query;
     const result = await pool.query(
-      `SELECT * FROM bookings WHERE user_id=$1 ORDER BY date DESC`,
+      'SELECT * FROM bookings WHERE user_id=$1 ORDER BY date DESC',
       [user_id]
     );
     res.json(result.rows);
@@ -56,17 +51,9 @@ app.get('/bookings/me', async (req, res) => {
   }
 });
 
-// 헬스체크
 app.get('/', (req, res) => res.json({ status: 'ok' }));
 
-app.listen(process.env.PORT || 3000, () => {
+app.listen(process.env.PORT || 3000, function() {
   console.log('서버 실행 중');
 });
 ```
-
----
-
-**📄 `.gitignore`** 복사 붙여넣기:
-```
-node_modules
-.env
