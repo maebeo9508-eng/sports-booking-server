@@ -27,4 +27,5 @@ app.get('/bookings/me', async (req, res) => {
   } catch(err) { res.status(500).json({ error: err.message }); }
 });
 app.get('/', (req, res) => res.json({ status: 'ok' }));
-app.listen(process.env.PORT || 3000, function() { console.log('서버 실행'); });
+const PORT = parseInt(process.env.PORT) || 3000;
+app.listen(PORT, '0.0.0.0', function() { console.log('서버 실행 포트:' + PORT); });
